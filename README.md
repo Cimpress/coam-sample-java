@@ -32,7 +32,7 @@ Compile the code:
 $ docker run -it --rm --name my-maven-project -v "$PWD":/usr/src/sampleapp -w /usr/src/sampleapp maven:3.2-jdk-7 mvn package
 ```
 
-Build the docker image for:
+Build the docker image:
 
 ```
 $ docker build -t sample-app .
