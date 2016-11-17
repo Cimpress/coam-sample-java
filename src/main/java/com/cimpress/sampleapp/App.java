@@ -1,10 +1,14 @@
 package com.cimpress.sampleapp;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-
 
 /**
  * Sample application
@@ -12,15 +16,54 @@ import com.mashape.unirest.http.exceptions.UnirestException;
  */
 public class App
 {
-  public static void main( String[] args ) throws UnirestException {
-    HttpResponse<JsonNode> stack= Unirest.get("https://api.stackexchange.com/2.2/questions").
-      header("accept",  "application/json").
-      queryString("order","desc").
-      queryString("sort", "creation").
-      queryString("filter", "default").
-      queryString("site", "stackoverflow").
-      asJson();
+  public static final String SUB="adfs|cbaldauf@cimpress.com";
+  public static final String RESOURCE_TYPE="merchants";
+  public static final String RESOURCE_IDENTIFIER="vistaprint";
 
-    System.out.println(stack.getBody().getObject().toString(2));
+  public static void main( String[] args ) throws Exception {
+    Properties prop = new Properties();
+	  InputStream input = null;
+
+    String clientId = null;
+    String clientSecret = null;
+
+    try {
+      input = new FileInputStream("config.properties");
+      prop.load(input);
+
+      clientId = prop.getProperty("CLIENT_ID");
+      clientSecret = prop.getProperty("CLIENT_SECRET");
+
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    } finally {
+      if (input != null) {
+        try {
+				  input.close();
+  			} catch (IOException e) {
+  				e.printStackTrace();
+  			}
+      }
+    }
+
+    System.out.println("Retrieving IAM access token for client ID " + clientId);
+
+    HttpResponse<JsonNode> tokenResp = Unirest.post("https://cimpress.auth0.com/oauth/token")
+      .header("content-type", "application/json")
+      .body("{\"client_id\": \"" + clientId + "\", \"client_secret\": \"" + clientSecret + "\", \"audience\": \"https://api.cimpress.io/\", \"grant_type\": \"client_credentials\"}")
+      .asJson();
+
+    String accessToken = tokenResp.getBody().getObject().getString("access_token");
+
+    System.out.println("Access token: " + accessToken + "\n");
+
+    System.out.println("Retrieving IAM permissions for " + SUB + " on "+ RESOURCE_TYPE + " " + RESOURCE_IDENTIFIER);
+
+    HttpResponse<JsonNode> iamResp = Unirest.get("https://api.cimpress.io/auth/iam/v0/user-permissions/" + SUB + "/" + RESOURCE_TYPE + "/" + RESOURCE_IDENTIFIER)
+      .header("authorization", "Bearer " + accessToken)
+      .asJson();
+
+    System.out.println("===== RESPONSE =====");
+    System.out.println(iamResp.getBody().getObject().toString(2));
   }
 }
