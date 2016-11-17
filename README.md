@@ -20,7 +20,7 @@ In addition to the aforementioned development dependencies, you will need the fo
 Create a `config.properties` file with `CLIENT_ID` and `CLIENT_SECRET` in the repo directory:
 
 ```
-$ cat > .env <<EOF
+$ cat > config.properties <<EOF
 CLIENT_ID=<client-id>
 CLIENT_SECRET=<client-secret>
 EOF
