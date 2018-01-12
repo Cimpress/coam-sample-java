@@ -16,7 +16,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
  */
 public class App
 {
-  public static final String SUB="adfs|cbaldauf@cimpress.com";
+  public static final String PRINCIPAL="adfs|jdaviscooke@cimpress.com";
   public static final String RESOURCE_TYPE="merchants";
   public static final String RESOURCE_IDENTIFIER="vistaprint";
 
@@ -46,7 +46,7 @@ public class App
       }
     }
 
-    System.out.println("Retrieving IAM access token for client ID " + clientId);
+    System.out.println("Retrieving access token for client ID " + clientId);
 
     HttpResponse<JsonNode> tokenResp = Unirest.post("https://cimpress.auth0.com/oauth/token")
       .header("content-type", "application/json")
@@ -57,13 +57,13 @@ public class App
 
     System.out.println("Access token: " + accessToken + "\n");
 
-    System.out.println("Retrieving IAM permissions for " + SUB + " on "+ RESOURCE_TYPE + " " + RESOURCE_IDENTIFIER);
+    System.out.println("Retrieving COAM permissions for " + PRINCIPAL + " on "+ RESOURCE_TYPE + " " + RESOURCE_IDENTIFIER);
 
-    HttpResponse<JsonNode> iamResp = Unirest.get("https://api.cimpress.io/auth/iam/v0/user-permissions/" + SUB + "/" + RESOURCE_TYPE + "/" + RESOURCE_IDENTIFIER)
+    HttpResponse<JsonNode> coamResp = Unirest.get("https://api.cimpress.io/auth/access-management/v1/principals/" + PRINCIPAL + "/permissions/" + RESOURCE_TYPE + "/" + RESOURCE_IDENTIFIER)
       .header("authorization", "Bearer " + accessToken)
       .asJson();
 
     System.out.println("===== RESPONSE =====");
-    System.out.println(iamResp.getBody().getObject().toString(2));
+    System.out.println(coamResp.getBody().getObject().toString(2));
   }
 }
